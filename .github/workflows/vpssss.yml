@@ -17,12 +17,13 @@ jobs:
           sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
           sudo systemctl restart ssh
 
-      - name: فتح بورت 22 باستخدام Serveo.net
+      - name: فتح بورت SSH باستخدام Serveo
         run: |
-          ssh -o StrictHostKeyChecking=no -R 2222:localhost:22 serveo.net > serveo.log 2>&1 &
+          echo "✅ فتح الاتصال على subdomain ثابت..."
+          ssh -o StrictHostKeyChecking=no -R bassamserveo:22:localhost:22 serveo.net &
           sleep 10
           echo "✅ انسخ الأمر التالي للدخول على الـ VPS:"
-          grep -o 'ssh .*@.*serveo.net' serveo.log || echo "❌ فشل استخراج رابط الاتصال"
+          echo "ssh root@bassamserveo.serveo.net -p 22"
           echo
           echo "🧑‍💻 Username: root"
           echo "🔐 Password: Vbnb123@"
