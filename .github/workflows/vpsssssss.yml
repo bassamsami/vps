@@ -1,43 +1,0 @@
-name: Ubuntu VPS via LocalXpose
-
-on: [workflow_dispatch]
-
-jobs:
-  ubuntu-vps:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: ⏬ إعداد SSH وتفعيل الدخول root
-        run: |
-          sudo apt update
-          sudo apt install -y openssh-server curl unzip
-          sudo systemctl enable ssh
-          sudo systemctl start ssh
-          echo "root:Vbnb123@" | sudo chpasswd
-          sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-          sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-          sudo systemctl restart ssh
-
-      - name: ⚡ تحميل وتشغيل LocalXpose
-        run: |
-          wget https://localxpose.io/releases/localxpose-linux-amd64.zip -O lx.zip
-          unzip lx.zip
-          chmod +x localxpose
-          ./localxpose authtoken XydYfpFyTvSFr3bLbyObHkSG3f5IkbCHGQGQUqwY
-          ./localxpose tcp 22 > lx.log 2>&1 &
-
-      - name: 📡 استخراج رابط الاتصال
-        run: |
-          sleep 10
-          echo "✅ انسخ الأمر التالي للدخول على الـ VPS:"
-          tunnel=$(grep -o 'tcp://[a-zA-Z0-9\.:-]*' lx.log)
-          if [ -z "$tunnel" ]; then
-            echo "❌ فشل في استخراج الرابط. جرب تشغل الـ workflow تاني."
-            exit 1
-          fi
-          echo
-          echo "ssh root@${tunnel#tcp://}"
-          echo
-          echo "🧑‍💻 Username: root"
-          echo "🔐 Password: Vbnb123@"
-          echo "📌 الجلسة شغالة لمدة 6 ساعات أو لحد ما توقف الـ workflow"

@@ -1,0 +1,35 @@
+name: Ubuntu VPS via LocalXpose (Stable Install)
+
+on: [workflow_dispatch]
+
+jobs:
+  ubuntu-vps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⏬ إعداد SSH وتفعيل root
+        run: |
+          sudo apt update
+          sudo apt install -y openssh-server curl snapd
+          sudo systemctl enable ssh
+          sudo systemctl start ssh
+          echo "root:Vbnb123@" | sudo chpasswd
+          sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo systemctl restart ssh
+
+      - name: 📦 تنصيب LocalXpose باستخدام snap
+        run: |
+          sudo snap install localxpose
+          localxpose authtoken XydYfpFyTvSFr3bLbyObHkSG3f5IkbCHGQGQUqwY
+          localxpose tcp --region eu --to localhost:22 > lx.log 2>&1 &
+          sleep 10
+
+      - name: 📡 استخراج وطباعة رابط الاتصال
+        run: |
+          echo "✅ انسخ الأمر التالي للدخول على الـ VPS عبر SSH:"
+          grep -o 'tcp://[a-zA-Z0-9\.-]*' lx.log || (echo "❌ الرابط مش موجود – حاول تشغّل Workflow تاني" && exit 1)
+          echo
+          echo "🧑‍💻 Username: root"
+          echo "🔐 Password: Vbnb123@"
+          echo "📌 الجلسة تنتهي بعد 6 ساعات أو عند إيقاف الـ workflow"
