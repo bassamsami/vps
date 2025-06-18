@@ -1,0 +1,30 @@
+name: Ubuntu VPS via Serveo
+
+on: [workflow_dispatch]
+
+jobs:
+  ubuntu-vps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: إعداد SSH وتغيير الباسورد
+        run: |
+          sudo apt update
+          sudo apt install -y openssh-server curl
+          sudo systemctl enable ssh
+          sudo systemctl start ssh
+          echo "root:Vbnb123@" | sudo chpasswd
+          sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+          sudo systemctl restart ssh
+
+      - name: فتح بورت 22 باستخدام Serveo.net
+        run: |
+          ssh -o StrictHostKeyChecking=no -R 2222:localhost:22 serveo.net > serveo.log 2>&1 &
+          sleep 10
+          echo "✅ تم تشغيل السيرفر بنجاح"
+          echo "📡 بيانات الاتصال:"
+          grep -o 'ssh .*@.*serveo.net' serveo.log || echo "⚠️ فشل الحصول على الرابط، جرب تاني بعد شوية"
+          echo
+          echo "🧑‍💻 Username: root"
+          echo "🔐 Password: Vbnb123@"
+          echo "📌 انتهت الجلسة بعد 6 ساعات أو عند إيقاف الـ workflow"
