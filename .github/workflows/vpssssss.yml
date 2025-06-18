@@ -1,49 +1,0 @@
-name: Ubuntu VPS via Serveo (Stable)
-
-on: [workflow_dispatch]
-
-jobs:
-  ubuntu-vps:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: ⏬ إعداد SSH وتغيير الباسورد
-        run: |
-          echo "📦 تثبيت SSH وفتح الاتصال..."
-          sudo apt update
-          sudo apt install -y openssh-server curl
-          sudo systemctl enable ssh
-          sudo systemctl start ssh
-          
-          echo "🔐 ضبط باسورد root..."
-          echo "root:Vbnb123@" | sudo chpasswd
-          
-          echo "🛠️ تفعيل الدخول لـ root"
-          sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-          sudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-          sudo systemctl restart ssh
-
-      - name: 🌐 فتح اتصال Serveo تلقائي
-        run: |
-          echo "🔌 بدء tunneling مع تخصيص terminal..."
-          ssh -tt -o StrictHostKeyChecking=no -R 0:localhost:22 serveo.net > serveo.log 2>&1 &
-          sleep 15
-
-          echo "📡 استخراج رابط الاتصال..."
-          tunnel_url=$(grep -o 'Forwarding.*serveo.net:[0-9]*' serveo.log | awk '{print $3}')
-          
-          if [ -z "$tunnel_url" ]; then
-            echo "❌ فشل استخراج الرابط. حاول تشغيل الـ workflow تاني."
-            exit 1
-          fi
-
-          echo "✅ تم تشغيل VPS بنجاح!"
-          echo
-          echo "================= بيانات الاتصال ================="
-          echo "🔌 SSH Command:"
-          echo "ssh root@$tunnel_url"
-          echo
-          echo "🧑‍💻 Username: root"
-          echo "🔐 Password: Vbnb123@"
-          echo "==================================================="
-          echo "📌 الجلسة هتشتغل لمدة 6 ساعات أو لحد ما توقف الـ workflow"
